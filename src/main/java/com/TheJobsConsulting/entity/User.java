@@ -1,9 +1,13 @@
 package com.TheJobsConsulting.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @AllArgsConstructor
@@ -31,7 +35,7 @@ public class User {
     private String email;
     private String userType;
 
-     /*@OneToMany(cascade = CascadeType.ALL)
+     @OneToMany(cascade = CascadeType.ALL)
     @JsonIgnore
-    List<Appointment> listOfAppointments = new ArrayList<>();*/
+     List<Appointment> listOfAppointments = new ArrayList<>();
 }

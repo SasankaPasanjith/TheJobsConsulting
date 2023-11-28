@@ -1,4 +1,8 @@
 package com.TheJobsConsulting.repository;
 
-public interface AppointmentDAO {
+import com.TheJobsConsulting.entity.Appointment;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface AppointmentDAO extends JpaRepository<Appointment, Integer> {
+
 }

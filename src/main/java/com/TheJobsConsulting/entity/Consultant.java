@@ -1,8 +1,12 @@
 package com.TheJobsConsulting.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Pattern;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @AllArgsConstructor
@@ -32,7 +36,13 @@ public class Consultant {
     private String field;
     private String experience;
 
-    /*	@OneToMany(cascade = CascadeType.ALL,mappedBy = "appointmentId") from
-    	tutorial*/
-
+    //@OneToMany(cascade = CascadeType.ALL,mappedBy = "appointmentId") from
+    //	tutorial
+    @OneToMany(cascade = CascadeType.ALL)
+    @JsonIgnore
+    List<Appointment> listOfAppointments = new ArrayList<>();
+    private Integer appointmentFromTime;
+    private Integer appointmentToTime;
+    private Boolean validConsultant = true;
+    private String type;
 }
