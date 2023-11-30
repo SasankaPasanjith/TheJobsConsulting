@@ -1,4 +1,8 @@
 package com.TheJobsConsulting.repository;
 
-public interface SessionDAO {
+import com.TheJobsConsulting.entity.CurrentSession;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface SessionDAO extends JpaRepository<CurrentSession,Integer> {
+    public CurrentSession findByUuid(String uuid);
 }
