@@ -24,35 +24,36 @@ public class UserAdminLoginServiceImplement implements UserAdminLoginService {
 
     @Override
     public LoginUUIDKey logToAccount(LoginDTO loginDTO) throws LoginException {
-        LoginUUIDKey loginUUIDKey = new LoginUUIDKey();
+        LoginUUIDKey loginUUIDKey = new LoginUUIDKey();                        //Store information about login attempts
         User existingUser = userDAO.findByMobileNo(loginDTO.getMobileNo());
 
         if (existingUser == null) {
             throw new LoginException("Login Failed. Please Enter Valid Number" + loginDTO.getMobileNo());
         }
-        Optional<CurrentSession> validCustomerSession = sessionDAO.findById(existingUser.getUserId());
-
+        Optional<CurrentSession> validCustomerSession = sessionDAO.findById(existingUser.getUserId());   //retrieve user
+                                                                                                  // session by user id
         if (validCustomerSession.isPresent()) {
             if (SpringDocConfig.bCryptPasswordEncoder.matches(loginDTO.getPassword(), existingUser.getPassword())) {
-                loginUUIDKey.setUuid(validCustomerSession.get().getUuid());
-                loginUUIDKey.setMessage("Login Successful");
+                loginUUIDKey.setUuid(validCustomerSession.get().getUuid());        //Checking the session
+                loginUUIDKey.setMessage("Login Successful");                       //If the password match set session UUID
                 return loginUUIDKey;
             }
-            throw new LoginException("Please Enter Valid Details.");
+            throw new LoginException("Please Enter Valid Details.");             //display error message if not
         }
-        if (validCustomerSession.isPresent()) {
+        if (validCustomerSession.isPresent()) {           //Check if there is valid session already
             throw new LoginException("User is Already Logged in to the System.");
         }
         if (SpringDocConfig.bCryptPasswordEncoder.matches(loginDTO.getPassword(),existingUser.getPassword())){
-            String key = generateRandomString();
+            String key = generateRandomString();      //Generate random string key
             CurrentSession currentSession = new CurrentSession(existingUser.getUserId(), key, LocalDateTime.now());
+
             if (SpringDocConfig.bCryptPasswordEncoder.matches("admin", existingUser.getPassword())
                     && existingUser.getMobileNo().equals("100000")){
                 existingUser.setUserType("admin");
                 currentSession.setUserType("admin");
                 currentSession.setUserId(existingUser.getUserId());
                 sessionDAO.save(currentSession);
-                userDAO.save(existingUser);
+                userDAO.save(existingUser);       //If the user is an admin, it sets the user type to "admin"
 
                 loginUUIDKey.setMessage("Successfully log in as Admin");
                 loginUUIDKey.setUuid(key);
@@ -61,17 +62,14 @@ public class UserAdminLoginServiceImplement implements UserAdminLoginService {
 
             existingUser.setUserType("user");
             currentSession.setUserId(existingUser.getUserId());
-            currentSession.setUserType("user");
+            currentSession.setUserType("user");       //If the user is an user, it sets the user type to "user"
         }
             userDAO.save(existingUser);
 
             sessionDAO.save(currentSession);
 
-            loginUUIDKey.setMessage("Successfully log in  as User" +
-                    " key");
-
+            loginUUIDKey.setMessage("Successfully log in  as User" + " key");
             loginUUIDKey.setUuid(key);
-
             return loginUUIDKey;
         }
         else {

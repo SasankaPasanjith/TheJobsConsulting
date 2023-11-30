@@ -13,7 +13,8 @@ public interface UserService {
     User createUser(User customer) throws UserException;
     User updateUser(User user, String key) throws UserException;
 
-    List<Appointment> getUserAppointment (String key) throws AppointmentException,UserException;
+    List<Appointment> getUserAppointment (String key) throws AppointmentException,UserException;  //provided list of
+                                                                                      // appointments by the given key
     List<Consultant> getAllConsultant() throws ConsultantException;
 
 }

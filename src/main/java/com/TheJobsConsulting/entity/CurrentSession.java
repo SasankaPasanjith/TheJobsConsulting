@@ -18,7 +18,7 @@ public class CurrentSession {
     public CurrentSession(){
 
     }
-    public CurrentSession(Integer userId, String uuid, LocalDateTime localDateTime){
+    public CurrentSession(Integer userId, String uuid, LocalDateTime localDateTime){  //Used to create new object
         super();
         this.userId = userId;
         this.uuid = uuid;
