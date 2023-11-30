@@ -35,7 +35,7 @@ public class AdminServiceImplement implements AdminService {
 
     @Override
     public List<Consultant> getAllConsultants() throws ConsultantException {
-        List<Consultant> listOfConsultant = consultantDAO.findAll();   //retrieve all consultants id DB using DAO
+        List<Consultant> listOfConsultant = consultantDAO.findAll();   //retrieve all consultants in DB using DAO
         if (!listOfConsultant.isEmpty()){
             return listOfConsultant;
         }
