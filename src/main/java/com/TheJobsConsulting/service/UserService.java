@@ -14,8 +14,8 @@ public interface UserService {
 
     List<Appointment> getUserAppointment (String key) throws AppointmentException,UserException;  //provided list of
                                                                                       // appointments by the given key
-    List<Consultant> getAllConsultant() throws ConsultantException;
-    User getUserByUuid(String uuid) throws UserException;
+    List<Consultant> getAllConsultant() throws ConsultantException; // to retrieve a list of consultants
+    User getUserByUuid(String uuid) throws UserException;  //to retrieve a user by their UUID
 
     CurrentSession getCurrentUserByUuid(String uuid) throws LoginException;
     Appointment deleteAppointment(Appointment appointment) throws AppointmentException, ConsultantException, Exception;

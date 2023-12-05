@@ -31,7 +31,7 @@ public class UserAdminLoginServiceImplement implements UserAdminLoginService {
             throw new LoginException("Login Failed. Please Enter Valid Number" + loginDTO.getMobileNo());
         }
         Optional<CurrentSession> validCustomerSession = sessionDAO.findById(existingUser.getUserId());   //retrieve user
-                                                                                                  // session by user id
+        // session by user id
         if (validCustomerSession.isPresent()) {
             if (SpringDocConfig.bCryptPasswordEncoder.matches(loginDTO.getPassword(), existingUser.getPassword())) {
                 loginUUIDKey.setUuid(validCustomerSession.get().getUuid());        //Checking the session
@@ -43,12 +43,12 @@ public class UserAdminLoginServiceImplement implements UserAdminLoginService {
         if (validCustomerSession.isPresent()) {           //Check if there is valid session already
             throw new LoginException("User is Already Logged in to the System.");
         }
-        if (SpringDocConfig.bCryptPasswordEncoder.matches(loginDTO.getPassword(),existingUser.getPassword())){
+        if (SpringDocConfig.bCryptPasswordEncoder.matches(loginDTO.getPassword(), existingUser.getPassword())) {
             String key = generateRandomString();      //Generate random string key
             CurrentSession currentSession = new CurrentSession(existingUser.getUserId(), key, LocalDateTime.now());
 
             if (SpringDocConfig.bCryptPasswordEncoder.matches("admin", existingUser.getPassword())
-                    && existingUser.getMobileNo().equals("100000")){
+                    && existingUser.getMobileNo().equals("100000")) {
                 existingUser.setUserType("admin");
                 currentSession.setUserType("admin");
                 currentSession.setUserId(existingUser.getUserId());
@@ -58,12 +58,12 @@ public class UserAdminLoginServiceImplement implements UserAdminLoginService {
                 loginUUIDKey.setMessage("Successfully log in as Admin");
                 loginUUIDKey.setUuid(key);
                 return loginUUIDKey;
-            }else {
+            } else {
 
-            existingUser.setUserType("user");
-            currentSession.setUserId(existingUser.getUserId());
-            currentSession.setUserType("user");       //If the user is an user, it sets the user type to "user"
-        }
+                existingUser.setUserType("user");
+                currentSession.setUserId(existingUser.getUserId());
+                currentSession.setUserType("user");       //If the user is an user, it sets the user type to "user"
+            }
             userDAO.save(existingUser);
 
             sessionDAO.save(currentSession);
@@ -71,33 +71,45 @@ public class UserAdminLoginServiceImplement implements UserAdminLoginService {
             loginUUIDKey.setMessage("Successfully log in  as User" + " key");
             loginUUIDKey.setUuid(key);
             return loginUUIDKey;
-        }
-        else {
-        }
+        } else {
+
 
             throw new LoginException("Please enter valid password");
+        }
     }
 
-    private String generateRandomString() {
+    @Override
+    public String logOutAccount(String key) throws LoginException {       // defines a method for logging out a user by
+                                                                          // deleting their session
+        CurrentSession currentUserOptional = sessionDAO.findByUuid(key);  //retrieves a CurrentSession object from a data
+                                                                          // access object
+        if (currentUserOptional != null) {
+            sessionDAO.delete(currentUserOptional);
+            return "Successfully Logout.";
+        } else {
+            throw new LoginException("Please Enter Valid Details.");
+        }
+    }
+
+    @Override
+    public Boolean checkUserLogin(String key) throws LoginException {
+        CurrentSession currentUserSession = sessionDAO.findByUuid(key);
+        if (currentUserSession != null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static String generateRandomString() {
         String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
-        StringBuilder salt = new StringBuilder();
-        Random random = new Random();
-        while (salt.length() < 18) { // length of the random string.
+        StringBuilder salt = new StringBuilder();            //used to efficiently build and manipulate strings
+        Random random = new Random();                        //used to generate random numbers
+        while (salt.length() < 18) {                         // length of the random string (less than 18)
             int index = (int) (random.nextFloat() * SALTCHARS.length());
             salt.append(SALTCHARS.charAt(index));
         }
         String saltStr = salt.toString();
         return saltStr;
     }
-
-    @Override
-    public String logOutAccount(String key) throws LoginException {
-        return null;
-    }
-
-    @Override
-    public Boolean checkUserLogin(String key) throws LoginException {
-        return null;
-    }
-
 }
