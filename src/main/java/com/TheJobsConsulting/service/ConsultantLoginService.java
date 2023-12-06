@@ -5,7 +5,6 @@ import com.TheJobsConsulting.entity.LoginUUIDKey;
 import com.TheJobsConsulting.exception.LoginException;
 
 public interface ConsultantLoginService {
-    LoginUUIDKey logInAccount(LoginDTO loginDTO) throws LoginException;
 
     LoginUUIDKey logToAccount(LoginDTO loginDTO) throws LoginException;
     String logOutAccount (String key) throws  LoginException;

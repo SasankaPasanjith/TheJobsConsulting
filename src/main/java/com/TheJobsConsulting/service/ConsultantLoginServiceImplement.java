@@ -23,7 +23,7 @@ public class ConsultantLoginServiceImplement  implements ConsultantLoginService 
     SessionDAO sessionDAO;
 
     @Override
-    public LoginUUIDKey logInAccount(LoginDTO loginDTO) throws LoginException {
+    public LoginUUIDKey logToAccount(LoginDTO loginDTO) throws LoginException {
         LoginUUIDKey loginUUIDKey = new LoginUUIDKey();                        //Store information about login attempts
 
         Consultant existingConsultant = consultantDAO.findByMobileNo(loginDTO.getMobileNo());
@@ -56,10 +56,6 @@ public class ConsultantLoginServiceImplement  implements ConsultantLoginService 
         }
     }
 
-    @Override
-    public LoginUUIDKey logToAccount(LoginDTO loginDTO) throws LoginException {
-        return null;
-    }
 
     @Override
     public String logOutAccount(String key) throws LoginException {
