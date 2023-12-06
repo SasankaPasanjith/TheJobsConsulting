@@ -58,13 +58,26 @@ public class ConsultantLoginServiceImplement  implements ConsultantLoginService 
 
 
     @Override
-    public String logOutAccount(String key) throws LoginException {
-        return null;
+    public String logOutAccount(String key) throws LoginException {    // defines a method for logging out a Consultant by
+                                                                       // deleting their session
+        CurrentSession currentConsultantOptional = sessionDAO.findByUuid(key);   //retrieves a CurrentSession object
+                                                                                 // from a data access object
+        if (currentConsultantOptional != null){
+            sessionDAO.delete(currentConsultantOptional);
+            return "Successfully Logged Out.";
+        }else {
+            throw new LoginException("Please Enter Valid Credentials.");
+        }
     }
 
     @Override
     public Boolean checkUserLogin(String key) throws LoginException {
-        return null;
+        CurrentSession currentUserSession = sessionDAO.findByUuid(key);       //Checking is there any existing login
+        if (currentUserSession != null){
+            return true;
+        }else {
+            return false;
+        }
     }
     public static String genarateRandomString() {
         String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
