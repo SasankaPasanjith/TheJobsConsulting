@@ -29,11 +29,11 @@ public class UserServiceImplement implements UserService, Runnable {
 
     @Override
     public User createUser (User user) throws UserException{
-        User dbUser = userDAO.findByMobileNo(user.getMobileNo());
+        User dbUser = userDAO.findByMobileNo(user.getMobileNo());  //Check is there any user with the given mobile number
         if (dbUser == null){
-            user.setUserType("User");
-            user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
-            userDAO.save(user);
+            user.setUserType("User");                             //Set user type to user
+            user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));   //encrypt the password
+            userDAO.save(user);                               //save the user
             return user;
         }else{
             throw new UserException("Already Registered User by Using this Mobile Number.");
@@ -42,7 +42,15 @@ public class UserServiceImplement implements UserService, Runnable {
 
     @Override
     public User updateUser(User user, String key) throws UserException {
-        return null;
+        CurrentSession loginUser = sessionDAO.findByUuid(key);   // Retrieves object from the data access layer
+        if (loginUser ==null){
+            throw new UserException("Please Provide the Valid Details to Update the User");
+        }
+        if (user.getUserId() == loginUser.getUserId()){
+            return userDAO.save(user);
+        }else {
+            throw new UserException("Invalid Details. Please Login Again.");
+        }
     }
 
     @Override
