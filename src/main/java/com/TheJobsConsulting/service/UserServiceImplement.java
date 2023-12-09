@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 import static com.TheJobsConsulting.config.SpringDocConfig.bCryptPasswordEncoder;
 
@@ -54,6 +55,31 @@ public class UserServiceImplement implements UserService, Runnable {
     }
 
     @Override
+    public User getUserByUuid(String uuid) throws UserException {
+       CurrentSession currentUser = sessionDAO.findByUuid(uuid);  // Retrieve the current session based on the provided UUID
+        Optional<User>user = userDAO.findById(currentUser.getUserId());  // Retrieve the user based on the user ID from
+                                                                         // the current session
+        if (user.isPresent()){                                         // Check if the user is present in the database
+            return user.get();
+        }else {
+            throw new UserException("No User Found on this Key"+uuid);
+        }
+    }
+
+    @Override
+    public User getUserDetails(String key) throws UserException {
+        CurrentSession currentUserSession = sessionDAO.findByUuid(key);   // Retrieve the current session based on the
+                                                                          // provided key
+        Optional<User>registeredUser = userDAO.findById(currentUserSession.getUserId());  // Retrieve the registered user
+                                                                        // based on the user ID from the current session
+        if (registeredUser.isPresent()){
+            return registeredUser.get();
+        }else {
+            throw new UserException("No User Found. Please Try Again.");
+        }
+    }
+
+    @Override
     public List<Appointment> getUserAppointment(String key) throws AppointmentException, UserException {
         return null;
     }
@@ -64,22 +90,12 @@ public class UserServiceImplement implements UserService, Runnable {
     }
 
     @Override
-    public User getUserByUuid(String uuid) throws UserException {
-        return null;
-    }
-
-    @Override
     public CurrentSession getCurrentUserByUuid(String uuid) throws LoginException {
         return null;
     }
 
     @Override
     public Appointment deleteAppointment(Appointment appointment) throws AppointmentException, ConsultantException, Exception {
-        return null;
-    }
-
-    @Override
-    public User getUserDetails(String key) throws UserException {
         return null;
     }
 
