@@ -8,6 +8,7 @@ import com.TheJobsConsulting.exception.AppointmentException;
 import com.TheJobsConsulting.exception.ConsultantException;
 import com.TheJobsConsulting.exception.LoginException;
 import com.TheJobsConsulting.exception.UserException;
+import com.TheJobsConsulting.repository.ConsultantDAO;
 import com.TheJobsConsulting.repository.SessionDAO;
 import com.TheJobsConsulting.repository.UserDAO;
 import jakarta.mail.MessagingException;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.TheJobsConsulting.config.SpringDocConfig.bCryptPasswordEncoder;
 
@@ -27,6 +29,8 @@ public class UserServiceImplement implements UserService, Runnable {
     UserDAO userDAO;
     @Autowired
     SessionDAO sessionDAO;
+    @Autowired
+    ConsultantDAO consultantDAO;
 
     @Override
     public User createUser (User user) throws UserException{
@@ -80,17 +84,30 @@ public class UserServiceImplement implements UserService, Runnable {
     }
 
     @Override
+    public CurrentSession getCurrentUserByUuid(String uuid) throws LoginException {  //find a user session based on the provided UUID
+        CurrentSession currentUserSession = sessionDAO.findByUuid(uuid);
+        if (currentUserSession != null){
+            return currentUserSession;
+        }else {
+            throw new LoginException("No User Found From This Key.");
+        }
+    }
+
+    @Override
+    public List<Consultant> getAllConsultant() throws ConsultantException {    //retrieve all consultants from the database
+        List<Consultant>listOfConsultant = consultantDAO.findAll();
+        if (!listOfConsultant.isEmpty()){
+            listOfConsultant = listOfConsultant.stream().collect(Collectors.toList()); //If there are consultants, the list
+                                                                                       // is converted to a new list and returned
+            return listOfConsultant;
+        }else {
+            throw new ConsultantException("No Registered Consultants.");
+        }
+    }
+
+
+    @Override
     public List<Appointment> getUserAppointment(String key) throws AppointmentException, UserException {
-        return null;
-    }
-
-    @Override
-    public List<Consultant> getAllConsultant() throws ConsultantException {
-        return null;
-    }
-
-    @Override
-    public CurrentSession getCurrentUserByUuid(String uuid) throws LoginException {
         return null;
     }
 
