@@ -1,9 +1,11 @@
 package com.TheJobsConsulting.controller;
 
 import com.TheJobsConsulting.entity.User;
+import com.TheJobsConsulting.exception.LoginException;
 import com.TheJobsConsulting.exception.UserException;
 import com.TheJobsConsulting.repository.SessionDAO;
 import com.TheJobsConsulting.repository.UserDAO;
+import com.TheJobsConsulting.service.UserAdminLoginService;
 import com.TheJobsConsulting.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,6 +24,8 @@ public class UserController {
     UserService userService;
     @Autowired
     SessionDAO sessionDAO;
+    @Autowired
+    UserAdminLoginService userAdminLoginService;
 
     @CrossOrigin
     @PostMapping("/registerUser")
@@ -36,6 +40,18 @@ public class UserController {
         User updatedUser = userService.updateUser(user, key);
         return new ResponseEntity<User>(updatedUser, HttpStatus.OK);
     }
+
+    @GetMapping("/viewUser")
+    @CrossOrigin
+    public ResponseEntity<User>viewUserDetails(@RequestParam String key) throws LoginException, UserException{
+        if (userAdminLoginService.checkUserLogin(key)){
+            User returnUser = userService.getUserDetails(key); // retrieve details about the user with the specified key
+            return new ResponseEntity<User>(returnUser, HttpStatus.ACCEPTED);
+        }else {
+            throw new LoginException("User Not Found.");
+        }
+    }
+
 }
 
 
