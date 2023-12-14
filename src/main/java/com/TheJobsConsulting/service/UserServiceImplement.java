@@ -99,6 +99,23 @@ public class UserServiceImplement implements UserService, Runnable {
         }
     }
 
+    @Override
+    public User forgotPassword(String key, ForgotPassword forgotPassword) throws PasswordException {
+        CurrentSession currentUserSession = sessionDAO.findByUuid(key);
+        Optional<User>existingUser = userDAO.findById(currentUserSession.getUserId());  //Retrieves a user by calling
+                                                                             // the findById method on a userDAO object
+        Boolean passwordMatch = bCryptPasswordEncoder.matches
+                (forgotPassword.getCurrentPassword(), existingUser.get().getPassword());  //Checks the current password
+                   // provided in the ForgotPassword object matches the stored password of the user obtained from the DB
+        if (passwordMatch){
+            existingUser.get().setPassword(bCryptPasswordEncoder.encode(forgotPassword.getNewPassword()));  //sets the user
+                                                                    // password to the hashed version of the new password
+            return userDAO.save(existingUser.get());     //saves the updated user object (with the new password) to the DB
+        }else {
+            throw new PasswordException("Error. Password Does Not Match.");
+        }
+    }
+
 
     @Override
     public List<Appointment> getUserAppointment(String key) throws AppointmentException, UserException {
@@ -115,10 +132,6 @@ public class UserServiceImplement implements UserService, Runnable {
         return null;
     }
 
-    @Override
-    public User forgotPassword(String key, ForgotPassword forgotPassword) throws PasswordException {
-        return null;
-    }
 
     @Override
     public void run() {

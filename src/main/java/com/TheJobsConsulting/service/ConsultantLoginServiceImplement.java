@@ -1,11 +1,9 @@
 package com.TheJobsConsulting.service;
 
 import com.TheJobsConsulting.config.SpringDocConfig;
-import com.TheJobsConsulting.entity.Consultant;
-import com.TheJobsConsulting.entity.CurrentSession;
-import com.TheJobsConsulting.entity.LoginDTO;
-import com.TheJobsConsulting.entity.LoginUUIDKey;
+import com.TheJobsConsulting.entity.*;
 import com.TheJobsConsulting.exception.LoginException;
+import com.TheJobsConsulting.exception.PasswordException;
 import com.TheJobsConsulting.repository.ConsultantDAO;
 import com.TheJobsConsulting.repository.SessionDAO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +12,8 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.Random;
+
+import static com.TheJobsConsulting.config.SpringDocConfig.bCryptPasswordEncoder;
 
 @Service
 public class ConsultantLoginServiceImplement  implements ConsultantLoginService {
@@ -79,6 +79,24 @@ public class ConsultantLoginServiceImplement  implements ConsultantLoginService 
             return false;
         }
     }
+
+    @Override
+    public Consultant forgotPassword(String key, ForgotPassword forgotPassword) throws PasswordException {
+        CurrentSession currentUserSession = sessionDAO.findByUuid(key);
+        Optional<Consultant> existingConsultant = consultantDAO.findById(currentUserSession.getUserId());  //Retrieves a consultant by calling
+                                                                                        // the findById method on a consultantDAO object
+        Boolean passwordMatch = bCryptPasswordEncoder.matches
+                (forgotPassword.getCurrentPassword(), existingConsultant.get().getPassword());   //Checks the current password
+                                   // provided in the ForgotPassword object matches the stored password of the consultant obtained from the DB
+        if (passwordMatch){
+            existingConsultant.get().setPassword(bCryptPasswordEncoder.encode(forgotPassword.getNewPassword()));  //sets the consultant
+                                                                       // password to the hashed version of the new password
+            return consultantDAO.save(existingConsultant.get());      //saves the updated consultant object (with the new password) to the DB
+        }else {
+            throw new PasswordException("Error. Password Does Not Match.");
+        }
+    }
+
     public static String genarateRandomString() {
         String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
         StringBuilder salt = new StringBuilder();            //used to efficiently build and manipulate strings
