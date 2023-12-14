@@ -1,13 +1,7 @@
 package com.TheJobsConsulting.service;
 
-import com.TheJobsConsulting.entity.Appointment;
-import com.TheJobsConsulting.entity.Consultant;
-import com.TheJobsConsulting.entity.CurrentSession;
-import com.TheJobsConsulting.entity.User;
-import com.TheJobsConsulting.exception.AppointmentException;
-import com.TheJobsConsulting.exception.ConsultantException;
-import com.TheJobsConsulting.exception.LoginException;
-import com.TheJobsConsulting.exception.UserException;
+import com.TheJobsConsulting.entity.*;
+import com.TheJobsConsulting.exception.*;
 import com.TheJobsConsulting.repository.ConsultantDAO;
 import com.TheJobsConsulting.repository.SessionDAO;
 import com.TheJobsConsulting.repository.UserDAO;
@@ -118,6 +112,11 @@ public class UserServiceImplement implements UserService, Runnable {
 
     @Override
     public Appointment bookAppointment(String key, Appointment appointment) throws AppointmentException, LoginException, ConsultantException, IOException, MessagingException {
+        return null;
+    }
+
+    @Override
+    public User forgotPassword(String key, ForgotPassword forgotPassword) throws PasswordException {
         return null;
     }
 
