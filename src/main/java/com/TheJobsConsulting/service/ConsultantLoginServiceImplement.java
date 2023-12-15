@@ -80,7 +80,8 @@ public class ConsultantLoginServiceImplement  implements ConsultantLoginService 
         }
     }
 
-     public static String genarateRandomString() {
+
+    public static String genarateRandomString() {
         String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
         StringBuilder salt = new StringBuilder();            //used to efficiently build and manipulate strings
         Random random = new Random();                        //used to generate random numbers

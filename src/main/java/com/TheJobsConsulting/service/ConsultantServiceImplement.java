@@ -72,12 +72,6 @@ public class ConsultantServiceImplement implements ConsultantService {
     }
 
     @Override
-    public List<User> getUserList() {
-        List<User>listUser = userDAO.findAll();  //Fetch all User objects from the database using the userDao
-        return listUser;
-    }
-
-    @Override
     public Consultant forgotPassword(String key, ForgotPassword forgotPassword) throws PasswordException {
         CurrentSession currentUserSession = sessionDAO.findByUuid(key);
         Optional<Consultant> existingConsultant = consultantDAO.findById(currentUserSession.getUserId());  //Retrieves a consultant by calling
@@ -92,6 +86,12 @@ public class ConsultantServiceImplement implements ConsultantService {
         }else {
             throw new PasswordException("Error. Password Does Not Match.");
         }
+    }
+
+    @Override
+    public List<User> getUserList() {
+        List<User>listUser = userDAO.findAll();  //Fetch all User objects from the database using the userDao
+        return listUser;
     }
 
     @Override

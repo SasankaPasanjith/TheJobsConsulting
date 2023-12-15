@@ -9,10 +9,11 @@ public interface ConsultantService {
     Consultant getConsultantDetails (String key)throws UserException;
     CurrentSession getCurrentUserByUuid (String uuid) throws LoginException;
     Consultant getConsultantByUuid(String uuid) throws UserException;
+    Consultant forgotPassword(String key, ForgotPassword forgotPassword) throws PasswordException;
     List<Consultant> getAllConsultantsInDb() throws ConsultantException;
     List<Appointment> getFutureAppointments (Consultant consultant) throws AppointmentException;
     List<User> getUserList();
 
-    Consultant forgotPassword(String key, ForgotPassword forgotPassword) throws PasswordException;
+
 
 }
