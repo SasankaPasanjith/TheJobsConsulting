@@ -12,7 +12,5 @@ public interface ConsultantLoginService {
     LoginUUIDKey logToAccount(LoginDTO loginDTO) throws LoginException;
     String logOutAccount (String key) throws  LoginException;
     Boolean checkUserLogin (String key) throws LoginException;
-
-    Consultant forgotPassword(String key, ForgotPassword forgotPassword) throws PasswordException;
 }
 

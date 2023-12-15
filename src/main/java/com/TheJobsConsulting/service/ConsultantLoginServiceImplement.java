@@ -80,24 +80,7 @@ public class ConsultantLoginServiceImplement  implements ConsultantLoginService 
         }
     }
 
-    @Override
-    public Consultant forgotPassword(String key, ForgotPassword forgotPassword) throws PasswordException {
-        CurrentSession currentUserSession = sessionDAO.findByUuid(key);
-        Optional<Consultant> existingConsultant = consultantDAO.findById(currentUserSession.getUserId());  //Retrieves a consultant by calling
-                                                                                        // the findById method on a consultantDAO object
-        Boolean passwordMatch = bCryptPasswordEncoder.matches
-                (forgotPassword.getCurrentPassword(), existingConsultant.get().getPassword());   //Checks the current password
-                                   // provided in the ForgotPassword object matches the stored password of the consultant obtained from the DB
-        if (passwordMatch){
-            existingConsultant.get().setPassword(bCryptPasswordEncoder.encode(forgotPassword.getNewPassword()));  //sets the consultant
-                                                                       // password to the hashed version of the new password
-            return consultantDAO.save(existingConsultant.get());      //saves the updated consultant object (with the new password) to the DB
-        }else {
-            throw new PasswordException("Error. Password Does Not Match.");
-        }
-    }
-
-    public static String genarateRandomString() {
+     public static String genarateRandomString() {
         String SALTCHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
         StringBuilder salt = new StringBuilder();            //used to efficiently build and manipulate strings
         Random random = new Random();                        //used to generate random numbers
