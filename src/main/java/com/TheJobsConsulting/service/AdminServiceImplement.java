@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class AdminServiceImplement implements AdminService {
@@ -78,13 +79,27 @@ public class AdminServiceImplement implements AdminService {
     }
 
     @Override
-    public Consultant revokePermissionConsultant(Consultant consultant) throws ConsultantException {
-        return null;
+    public Consultant grantPermissionConsultant(Consultant consultant) throws ConsultantException {
+        Optional<Consultant> registerConsultant = consultantDAO.findById(consultant.getConsultantId()); //Find a Consultant
+                                                                                         // object in a DAO using its ID
+        if (registerConsultant.isPresent()){
+            registerConsultant.get().setValidConsultant(true);  //If the consultant is found, sets the validConsultant
+                                                                // property of the found consultant to true.
+            return consultantDAO.save(registerConsultant.get());  //The modified consultant is then saved back to the DB
+        }else {
+            throw new ConsultantException("No Consultant With This ID" +consultant.getConsultantId());
+        }
     }
 
     @Override
-    public Consultant grantPermissionConsultant(Consultant consultant) throws ConsultantException {
-        return null;
+    public Consultant revokePermissionConsultant(Consultant consultant) throws ConsultantException {
+        Optional<Consultant> registerConsultant = consultantDAO.findById(consultant.getConsultantId());
+        if (registerConsultant.isPresent()){
+            registerConsultant.get().setValidConsultant(false);  //Revoking permission by marking the consultant as not valid
+            return consultantDAO.save(registerConsultant.get());
+        }else {
+            throw new ConsultantException("No Valid Consultant With This ID"+ consultant.getConsultantId());
+        }
     }
 
 }
