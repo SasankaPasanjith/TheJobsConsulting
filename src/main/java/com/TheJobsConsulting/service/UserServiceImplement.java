@@ -7,17 +7,21 @@ import com.TheJobsConsulting.repository.SessionDAO;
 import com.TheJobsConsulting.repository.UserDAO;
 import jakarta.mail.MessagingException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.auditing.CurrentDateTimeProvider;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.TheJobsConsulting.config.SpringDocConfig.bCryptPasswordEncoder;
 
 @Service
 public class UserServiceImplement implements UserService, Runnable {
+
+    static Map<String, LocalDateTime> myDateTime = new LinkedHashMap<>();   //creates a static map
 
     @Autowired
     UserDAO userDAO;
@@ -130,6 +134,59 @@ public class UserServiceImplement implements UserService, Runnable {
             }
         }else {
             throw new UserException("Please Enter Valid User Details.");
+        }
+    }
+
+    public static void loadAppointmentsDates (Integer from, Integer to) throws IOException, TimeDateException{
+        myDateTime.clear();  //Clears the existing content of the myDateTime data structure
+        if (from == null || to == null){
+            throw new TimeDateException("Please Enter Appointments Start & End Times Respectively.");
+        }
+        LocalDateTime currentDateTime = LocalDateTime.now();    //Obtains the current date and time
+        LocalDateTime tomorrowDateTime = currentDateTime.plusDays(1); //Calculates the date and time for tomorrow
+        LocalDateTime dayAfterTomorrow = currentDateTime.plusDays(2);  //calculates the date and time for day after tomorrow
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+        for (int i = from; i <= to; i++){  //Iterates over the range of hours for today
+            String todayTimeString = null;            //Constructs date-time strings
+            if (!(i >= 10)){
+                todayTimeString = currentDateTime.toLocalDate() + "0" + i + ":00";
+            }else {
+                todayTimeString = currentDateTime.toLocalDate() + " " + i + ":00";
+            }
+            LocalDateTime dateTime = LocalDateTime.parse(todayTimeString, formatter);   //Parses date,time strings into
+                                                                   //LocalDateTime objects using the specified formatter
+            if (currentDateTime.isBefore(dateTime)) {   //Checks if the parsed date-time is in the future compared to the
+                                                        // current date and time
+                myDateTime.put("today"+i, dateTime);
+                }
+            }
+
+        for (int i = from; i <= to; i++){ //Iterates over the range of hours for tomorrow
+            String tomorrowTimeString = null;     //Constructs date-time strings
+            if (!(i >= 10)){
+                tomorrowTimeString = tomorrowDateTime.toLocalDate() + "0" + i + ":00";
+            }else {
+                tomorrowTimeString = tomorrowDateTime.toLocalDate() + " " + i + ":00";
+            }
+            LocalDateTime dateTime = LocalDateTime.parse(tomorrowTimeString, formatter); //Parses date,time strings into
+                                                                   //LocalDateTime objects using the specified formatter
+            if (currentDateTime.isBefore(dateTime)){
+                myDateTime.put("tomorrow"+ i, dateTime);
+            }
+        }
+        for (int i = from; i <= to; i++){  //Iterates over the range of hours for day after tomorrow
+            String dayAfterTomorrowString = null;    //Constructs date-time strings
+            if (!(i >= 10)) {
+                dayAfterTomorrowString = dayAfterTomorrow.toLocalDate() + "0" + i + ":00";
+            }else {
+                dayAfterTomorrowString = dayAfterTomorrow.toLocalDate()+ " " + i + ":00";
+            }
+            LocalDateTime dateTime = LocalDateTime.parse(dayAfterTomorrowString, formatter); //Parses date,time strings into
+                                                                   //LocalDateTime objects using the specified formatter
+            if (currentDateTime.isBefore(dateTime)) {
+                myDateTime.put("day After Tomorrow"+ i, dateTime);
+            }
         }
     }
 
