@@ -30,9 +30,20 @@ public class UserServiceImplement implements UserService, Runnable {
     SessionDAO sessionDAO;
     @Autowired
     ConsultantDAO consultantDAO;
-
     @Autowired
     AppointmentDAO appointmentDAO;
+    @Autowired
+    Appointment appointment;
+    @Autowired
+    EmailService emailService;
+    @Autowired
+    Email email;
+
+    public UserServiceImplement(Appointment appointment, EmailService emailService, Email email) {
+        this.appointment = appointment;
+        this.emailService = emailService;
+        this.email = email;
+    }
 
     @Override
     public User createUser(User user) throws UserException {
@@ -224,6 +235,23 @@ public class UserServiceImplement implements UserService, Runnable {
                     Appointment registerAppointment = null;   //checks if the requested appointment date/time is not already booked
                     if (!flag1 && flag2){
                         registerAppointment = appointmentDAO.save(appointment);
+
+                        email.setEmailSubject("You have successfully booked an appointment on "+registerAppointment.getAppointmentDateTime());
+
+                        email.setEmailBody("Dear Sir/ Madam, " +
+                                "\n You have booked an appointment with "+registerAppointment.getConsultant().getName()+
+                        ". Please make sure to join to the session on time." +
+                                "\nAppointment ID : "+registerAppointment.getAppointmentId()+
+                                "\nSpecialized Field : "+registerAppointment.getConsultant().getField()+
+                                "\nConsultant Experience : "+registerAppointment.getConsultant().getExperience()+
+                                "\n\nThanks & Regards,\n" +
+                                "Team The Jobs Consulting.");
+
+                        UserServiceImplement userServiceImplement = new UserServiceImplement(appointment, emailService, email);
+                        Thread emailSendThread = new Thread(userServiceImplement);
+                        // Multi-Threading
+                        emailSendThread.start();
+
                     }
                     else {
                         throw new AppointmentException("This Time Slot was Already Booked. Please Select Different " +
