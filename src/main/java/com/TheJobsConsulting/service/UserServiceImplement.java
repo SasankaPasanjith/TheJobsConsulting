@@ -2,6 +2,7 @@ package com.TheJobsConsulting.service;
 
 import com.TheJobsConsulting.entity.*;
 import com.TheJobsConsulting.exception.*;
+import com.TheJobsConsulting.repository.AppointmentDAO;
 import com.TheJobsConsulting.repository.ConsultantDAO;
 import com.TheJobsConsulting.repository.SessionDAO;
 import com.TheJobsConsulting.repository.UserDAO;
@@ -29,6 +30,9 @@ public class UserServiceImplement implements UserService, Runnable {
     SessionDAO sessionDAO;
     @Autowired
     ConsultantDAO consultantDAO;
+
+    @Autowired
+    AppointmentDAO appointmentDAO;
 
     @Override
     public User createUser(User user) throws UserException {
@@ -190,17 +194,61 @@ public class UserServiceImplement implements UserService, Runnable {
         }
     }
 
+    @Override
+    public Appointment bookAppointment(String key, Appointment appointment) throws AppointmentException, LoginException,
+            ConsultantException, IOException, MessagingException, TimeDateException {
+        CurrentSession currentAppointmentSession = sessionDAO.findByUuid(key);  //retrieving a CurrentSession object based on the provided key using a sessionDAO
+        Optional<User> user = userDAO.findById(currentAppointmentSession.getUserId()); // gets a User object based on the user ID stored in the CurrentSession
+        synchronized (this){
+            if (user.isPresent()){
+                appointment.setUser(user.get());  //sets the user for the appointment and proceeds to handle the consultant details.
+                Consultant consultant = appointment.getConsultant();  //retrieves a Consultant object from the appointment
+                Optional<Consultant> registerConsultant = consultantDAO.findById(consultant.getConsultantId());
+                if (!registerConsultant.isEmpty()){
+                    appointment.setConsultant(registerConsultant.get()); //setting consultant in appointment
+                    loadAppointmentsDates(registerConsultant.get().getAppointmentFromTime(),
+                            registerConsultant.get().getAppointmentToTime());   //loads appointment dates & times for the consultant
+                    List<Appointment> listOfAppointment = appointment.getConsultant().getListOfAppointments();
+                    Boolean flag1 = false;
+                    Boolean flag2 = false;
+                    for (Appointment eachAppointment : listOfAppointment){
+                        if (eachAppointment.getAppointmentDateTime().isEqual(appointment.getAppointmentDateTime())){
+                            flag1 = true;
+                        }
+                    }
+                    for (String str : myDateTime.keySet()){ //check the given date
+                        if (myDateTime.get(str).isEqual(appointment.getAppointmentDateTime())){
+                            flag2 = true;
+                        }
+                    }
+                    Appointment registerAppointment = null;   //checks if the requested appointment date/time is not already booked
+                    if (!flag1 && flag2){
+                        registerAppointment = appointmentDAO.save(appointment);
+                    }
+                    else {
+                        throw new AppointmentException("This Time Slot was Already Booked. Please Select Different " +
+                                "Time Slot." +appointment.getAppointmentDateTime());
+                    }
+                    registerConsultant.get().getListOfAppointments().add(registerAppointment);
+                    consultantDAO.save(registerConsultant.get());
+                    user.get().getListOfAppointments().add(registerAppointment);
+                    userDAO.save(user.get());
+                    return registerAppointment;   //returns the registered appointment
+                }else {
+                    throw new ConsultantException("Please Enter Valid Consultant Details" + consultant.getConsultantId());
+                }
+            } else {
+                throw new LoginException("Please Enter Valid Key.");
+            }
+        }
+    }
+
+
 
     @Override
     public Appointment deleteAppointment(Appointment appointment) throws AppointmentException, ConsultantException, Exception {
         return null;
     }
-
-    @Override
-    public Appointment bookAppointment(String key, Appointment appointment) throws AppointmentException, LoginException, ConsultantException, IOException, MessagingException {
-        return null;
-    }
-
 
     @Override
     public void run() {

@@ -21,7 +21,7 @@ public interface UserService {
     Appointment deleteAppointment(Appointment appointment) throws AppointmentException, ConsultantException, Exception;
     User getUserDetails(String key) throws UserException;
     Appointment bookAppointment (String key, Appointment appointment) throws AppointmentException, LoginException,
-            ConsultantException,IOException,MessagingException;
+            ConsultantException, IOException, MessagingException, TimeDateException;
     User forgotPassword(String key, ForgotPassword forgotPassword) throws PasswordException;
 
    }
