@@ -129,6 +129,7 @@ public class ConsultantServiceImplement implements ConsultantService {
         }
     }
 
+
     public static void testing() {  //Included for testing purposes
         int strength = 10;
         BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(strength, new SecureRandom());
@@ -158,5 +159,18 @@ public class ConsultantServiceImplement implements ConsultantService {
         }
     }
 
+    @Override
+    public Consultant updateTime(String key, UpdateTime updateTime) throws ConsultantException {
+        CurrentSession currentSession = sessionDAO.findByUuid(key);
+        Optional<Consultant> registeredConsultant = consultantDAO.findById(currentSession.getUserId());
+        if (currentSession == null){
+            throw new ConsultantException("Please Provide Valid Appointment Details to Update Time.");
+        }else {
+            registeredConsultant.get().setAppointmentToTime(updateTime.getAppointmentStartTime());  //Proceeds to update the appointment
+                                                                            // start and end times of the associated Consultant object
+            registeredConsultant.get().setAppointmentFromTime(updateTime.getAppointmentEndTime());
+            return consultantDAO.save(registeredConsultant.get());
+        }
+    }
 
 }

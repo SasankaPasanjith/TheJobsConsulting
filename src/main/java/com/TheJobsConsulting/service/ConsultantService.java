@@ -15,4 +15,5 @@ public interface ConsultantService {
     List<User> getUserList();
     List<Appointment> getPastAppointments (Consultant consultant) throws AppointmentException;
     List<Appointment> getAllAppointments (Consultant registerConsultant) throws ConsultantException;
+    Consultant updateTime (String key, UpdateTime updateTime)throws ConsultantException;
 }
