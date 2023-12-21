@@ -6,8 +6,10 @@ import com.TheJobsConsulting.repository.ConsultantDAO;
 import com.TheJobsConsulting.repository.SessionDAO;
 import com.TheJobsConsulting.repository.UserDAO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -92,6 +94,45 @@ public class ConsultantServiceImplement implements ConsultantService {
     public List<User> getUserList() {
         List<User>listUser = userDAO.findAll();  //Fetch all User objects from the database using the userDao
         return listUser;
+    }
+
+    @Override
+    public List<Appointment> getPastAppointments(Consultant consultant) throws AppointmentException {
+        List<Appointment> listAppointment = consultant.getListOfAppointments();  //Retrieves a list of appointments
+        List<Appointment> listPastAppointment = new ArrayList<>();   //Initializes a list to store past appointments
+        LocalDateTime currentDateTime = LocalDateTime.now();
+        testing();
+        try{
+            for (Appointment eachAppointment: listAppointment){       //Iterating through each appointment in the list
+                                                                      // from the consultant
+                if (eachAppointment.getAppointmentDateTime().isBefore(currentDateTime)){  //Checks the appointment date
+                                                                               // & time are before the current date time
+                    listPastAppointment.add(eachAppointment);
+                }
+            }
+        }catch (Exception exception){
+            System.out.println(exception.fillInStackTrace());
+        }if (!listPastAppointment.isEmpty()){
+            return listPastAppointment;
+        }else {
+            throw new AppointmentException("There is No Past Appointments.");
+        }
+    }
+
+    @Override
+    public List<Appointment> getAllAppointments(Consultant registerConsultant) throws ConsultantException {
+        List<Appointment> listAppointment = registerConsultant.getListOfAppointments();
+        if (!listAppointment.isEmpty()){
+            return listAppointment;
+        }else {
+            throw new ConsultantException("There are No Appointments To Show.");
+        }
+    }
+
+    public static void testing() {  //Included for testing purposes
+        int strength = 10;
+        BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(strength, new SecureRandom());
+        String encodedPassword = bCryptPasswordEncoder.encode("1234");
     }
 
     @Override

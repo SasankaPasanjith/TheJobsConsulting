@@ -13,7 +13,6 @@ public interface ConsultantService {
     List<Consultant> getAllConsultantsInDb() throws ConsultantException;
     List<Appointment> getFutureAppointments (Consultant consultant) throws AppointmentException;
     List<User> getUserList();
-
-
-
+    List<Appointment> getPastAppointments (Consultant consultant) throws AppointmentException;
+    List<Appointment> getAllAppointments (Consultant registerConsultant) throws ConsultantException;
 }
