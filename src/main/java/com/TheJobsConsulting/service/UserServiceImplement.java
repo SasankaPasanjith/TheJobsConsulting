@@ -275,11 +275,62 @@ public class UserServiceImplement implements UserService, Runnable {
 
     @Override
     public Appointment deleteAppointment(Appointment appointment) throws AppointmentException, ConsultantException, Exception {
-        return null;
+        Optional<Appointment> registerAppointment = appointmentDAO.findById(appointment.getAppointmentId());  //Retrieving
+                                                   // an appointment from a data access object (appointmentDAO) using the ID
+        LocalDateTime localDateTime = LocalDateTime.now();
+        if (localDateTime.isAfter(registerAppointment.get().getAppointmentDateTime())){ //Checks if the current time is after the appointment's scheduled time
+            throw new AppointmentException("Appointment Time was already exceeded.");
+        }
+        if (registerAppointment.isPresent()){      //Check if the appointment exist
+
+            Optional<Consultant> registeredConsultant = consultantDAO.findById(appointment.getConsultant().getConsultantId());
+            if (registeredConsultant.isPresent()){  //Check if the consultant exist
+                Optional<User> registeredUser = userDAO.findById(appointment.getUser().getUserId());
+
+                if (registeredUser.isPresent()){   //Check if the user exist
+                   Boolean consultantListFlag = registeredConsultant.get().getListOfAppointments().remove(registerAppointment.get());
+                   Boolean userListFlag = registeredUser.get().getListOfAppointments().remove(registerAppointment.get());
+                                    //Removes the appointment from the lists of appointments associated with the consultant and user
+
+                   if (consultantListFlag && userListFlag){
+                       appointmentDAO.delete(registerAppointment.get());
+                             //Sending appointment cancellation email
+                       email.setEmailSubject("You Have Successfully Cancelled The Appointment At"+ appointment.getAppointmentDateTime());
+
+                       email.setEmailBody("Dear Sir/Madam, " +
+                               "\n You have canceled an appointment with " + registerAppointment.get().getConsultant().getName()+
+                               "\n"
+                               + "Appointment Id: " + registerAppointment.get().getAppointmentId() + "\n"
+                               + "Specialized Field: " + registerAppointment.get().getConsultant().getField() + "\n"
+                               + "Consultant Experience : " + registerAppointment.get().getConsultant().getExperience() +
+                               "\n\nThanks & Regards,\n" +
+                               "Team The Jobs Consulting.");
+                       UserServiceImplement userServiceImplement = new UserServiceImplement(registerAppointment.get(), emailService, email);
+                       Thread emailSentThread = new Thread(userServiceImplement);
+
+                       emailSentThread.start();
+                       return registerAppointment.get();
+                   }else {
+                       throw new Exception("Appointment Can't be Cancelled. Please Try Again.");
+                   }
+                }else {
+                    throw new UserException("No User Found With This ID " + appointment.getUser().getUserId());
+                }
+            }else {
+                throw new ConsultantException("No Consultant Found With This ID"+ appointment.getConsultant().getConsultantId());
+            }
+        }else {
+            throw new AppointmentException("Appointment Didn't Found." +appointment.getAppointmentId());
+        }
     }
 
     @Override
     public void run() {
-
+        try {
+            emailService.sendAppointmentBookingMail(appointment.getUser().getEmail(), email);
+        }catch (MessagingException ex){
+            ex.printStackTrace();   // If any issues arise during the email sending process, it catches and prints
+                                    // the exception stack trace.
+        }
     }
 }
