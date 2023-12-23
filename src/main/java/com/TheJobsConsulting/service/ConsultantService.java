@@ -3,6 +3,8 @@ package com.TheJobsConsulting.service;
 import com.TheJobsConsulting.entity.*;
 import com.TheJobsConsulting.exception.*;
 
+import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ConsultantService {
@@ -16,4 +18,7 @@ public interface ConsultantService {
     List<Appointment> getPastAppointments (Consultant consultant) throws AppointmentException;
     List<Appointment> getAllAppointments (Consultant registerConsultant) throws ConsultantException;
     Consultant updateTime (String key, UpdateTime updateTime)throws ConsultantException;
+    List<LocalDateTime> consultantAvailableTimeForBooking(String key, Consultant consultant)
+            throws IOException, TimeDateException,ConsultantException;
+
 }

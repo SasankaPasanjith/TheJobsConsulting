@@ -9,10 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.TheJobsConsulting.config.SpringDocConfig.bCryptPasswordEncoder;
@@ -170,6 +172,38 @@ public class ConsultantServiceImplement implements ConsultantService {
                                                                             // start and end times of the associated Consultant object
             registeredConsultant.get().setAppointmentFromTime(updateTime.getAppointmentEndTime());
             return consultantDAO.save(registeredConsultant.get());
+        }
+    }
+
+    @Override
+    public List<LocalDateTime> consultantAvailableTimeForBooking(String key, Consultant consultant) throws IOException,
+            TimeDateException, ConsultantException {
+        Optional<Consultant> registerConsultant = consultantDAO.findById(consultant.getConsultantId()); //Consultant retrieval
+        List<LocalDateTime> availableTime = new ArrayList<>();  //Empty list to store the available time slots.
+        if (registerConsultant.isPresent()){
+            UserServiceImplement.loadAppointmentsDates(registerConsultant.get().getAppointmentFromTime(),
+                     registerConsultant.get().getAppointmentToTime());                     // load appointment dates
+            Map<String, LocalDateTime> myDateTime = UserServiceImplement.myDateTime; //Retrieves the list of appointments
+                                                          // for the consultant and iterates over the keys of myDateTime
+            List<Appointment> listConsultantAppointments = registerConsultant.get().getListOfAppointments();
+            for (String str: myDateTime.keySet()){
+                Boolean flag = false;
+                for (Appointment eachAppointment : listConsultantAppointments){
+                    LocalDateTime localDateTime = myDateTime.get(str);
+                    if (localDateTime.isEqual(eachAppointment.getAppointmentDateTime())){
+                        flag = true;
+                        break;                              //checks if there is an appointment at the given date-time
+                    }
+                }if (flag == false){
+                    availableTime.add(myDateTime.get(str));
+                }
+            }if (!availableTime.isEmpty()){
+                return availableTime;
+            }else {
+                throw new ConsultantException("There Is No Time Slot For Bookings. Please Try Again Later.");
+            }
+        }else {
+            throw new ConsultantException("No Consultant Found."+consultant.getConsultantId());
         }
     }
 
