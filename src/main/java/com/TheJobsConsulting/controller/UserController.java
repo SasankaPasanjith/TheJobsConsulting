@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.time.DateTimeException;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -147,7 +148,22 @@ public class UserController {
             throw new LoginException("Invalid Credentials. Please Login Again.");
         }
     }
+
+    @PostMapping("/availableTiming")
+    @CrossOrigin
+    public ResponseEntity<List<LocalDateTime>> getConsultantAvailableTime (@RequestParam String key, @RequestBody Consultant consultant)
+            throws IOException, TimeDateException, ConsultantException, LoginException{
+        if (userAdminLoginService.checkUserLogin(key)){
+            List<LocalDateTime> availableList = consultantService.consultantAvailableTimeForBooking(key, consultant); //Retrieve a
+                                                                     // list of available date and time slots for booking
+            return new ResponseEntity<List<LocalDateTime>>(availableList, HttpStatus.ACCEPTED);
+        }else {
+            throw new LoginException("Invalid Credentials. Please Login Again.");
+        }
+    }
 }
+
+
 
 
 
