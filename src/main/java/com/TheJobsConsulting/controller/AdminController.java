@@ -1,8 +1,10 @@
 package com.TheJobsConsulting.controller;
 
+import com.TheJobsConsulting.entity.Appointment;
 import com.TheJobsConsulting.entity.Consultant;
 import com.TheJobsConsulting.entity.CurrentSession;
 import com.TheJobsConsulting.entity.User;
+import com.TheJobsConsulting.exception.AppointmentException;
 import com.TheJobsConsulting.exception.ConsultantException;
 import com.TheJobsConsulting.exception.LoginException;
 import com.TheJobsConsulting.exception.UserException;
@@ -79,6 +81,49 @@ public class AdminController {
         }
     }
 
+    @GetMapping("/getAllAppointments")
+    @CrossOrigin
+    public ResponseEntity<List<Appointment>> getAllAppointment (@RequestParam String key) throws LoginException, AppointmentException{
+        if (userAdminLoginService.checkUserLogin(key)){
+            List<Appointment> allAppointments = adminService.getAllAppointments();
+            return new ResponseEntity<List<Appointment>>(allAppointments, HttpStatus.ACCEPTED);
+        }else {
+            throw new LoginException("Please Login First.");
+        }
     }
+
+    @PutMapping("/revokePermission")
+    @CrossOrigin
+    public ResponseEntity <Consultant> revokePermissionConsultant (@RequestParam String key, @RequestBody Consultant consultant)
+        throws ConsultantException, LoginException{
+        if (userAdminLoginService.checkUserLogin(key)) {
+            CurrentSession currentUserSession = userService.getCurrentUserByUuid(key);
+            if (!currentUserSession.getUserType().equals("admin")){   //Check if the user logged in as an admin
+                throw new LoginException("Please Login As An Admin.");
+            }
+             Consultant deletedConsultant = adminService.revokePermissionConsultant(consultant);  //Revoke permissions for the consultant
+            return new ResponseEntity<Consultant>(deletedConsultant, HttpStatus.CREATED);
+            }else {
+            throw new LoginException("Please Enter Valid Key.");
+        }
+    }
+
+    @PutMapping("/grantPermission")
+    @CrossOrigin
+    public ResponseEntity<Consultant> grantPermissionConsultant (@RequestParam String key, @RequestBody Consultant consultant)
+        throws ConsultantException, LoginException{
+        if (userAdminLoginService.checkUserLogin(key)){
+            CurrentSession currentUserSession = userService.getCurrentUserByUuid(key);
+            if (!currentUserSession.getUserType().equals("admin")){
+                throw new LoginException("Please Login As An Admin.");
+            }
+            Consultant deletedConsultant = adminService.grantPermissionConsultant(consultant);
+            return new ResponseEntity<Consultant>(deletedConsultant, HttpStatus.CREATED);
+        }else {
+            throw new LoginException("Please Enter Valid Key.");
+        }
+    }
+
+}
 
 
