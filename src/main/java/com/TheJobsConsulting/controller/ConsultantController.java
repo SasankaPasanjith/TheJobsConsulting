@@ -1,10 +1,7 @@
 package com.TheJobsConsulting.controller;
 
 
-import com.TheJobsConsulting.entity.Appointment;
-import com.TheJobsConsulting.entity.Consultant;
-import com.TheJobsConsulting.entity.CurrentSession;
-import com.TheJobsConsulting.entity.ForgotPassword;
+import com.TheJobsConsulting.entity.*;
 import com.TheJobsConsulting.exception.*;
 import com.TheJobsConsulting.service.ConsultantLoginService;
 import com.TheJobsConsulting.service.ConsultantService;
@@ -112,9 +109,9 @@ public class ConsultantController {
             throws LoginException, PasswordException {
         if (consultantLoginService.checkUserLogin(key)) {
             if (forgotPassword.getNewPassword().equals(forgotPassword.getConfirmNewPassword())) {  //Proceeds to check if
-                                                                 // the new password and the confirm new password match
+                // the new password and the confirm new password match
                 if (forgotPassword.getCurrentPassword().equals(forgotPassword.getNewPassword())) { //If the passwords match,
-                                                            // checks if the current password is the same as the new password.
+                    // checks if the current password is the same as the new password.
                     throw new PasswordException("Please Enter New Password.");
                 }
                 Consultant finalResult = consultantService.forgotPassword(key, forgotPassword);
@@ -127,7 +124,55 @@ public class ConsultantController {
         }
     }
 
+    @GetMapping("/listOfUsers")
+    @CrossOrigin
+    public ResponseEntity<List<User>> getListOfUsers(@RequestParam String key)
+            throws ConsultantException, LoginException, UserException {
+        if (consultantLoginService.checkUserLogin(key)) {
+            CurrentSession currentUserSession = consultantService.getCurrentUserByUuid(key);
+            Consultant registerConsultant = consultantService.getConsultantByUuid(key);
+            if (!currentUserSession.getUserType().equals("consultant")) {
+                throw new LoginException("Please Login As Consultant.");
+            }
+            if (registerConsultant != null) {
+                List<User> listOfUser = consultantService.getUserList();
+                return new ResponseEntity<List<User>>(listOfUser, HttpStatus.OK);
+            } else {
+                throw new ConsultantException("Please Enter Valid Details.");
+            }
+        } else {
+            throw new LoginException("Please Enter Valid Key.");
+
+        }
+    }
+
+    @PutMapping("/timeUpdate")
+    @CrossOrigin
+    public ResponseEntity<Consultant> timeUpdate(@RequestParam String key, @RequestBody UpdateTime updateTime)
+            throws LoginException, ConsultantException {
+        if (consultantLoginService.checkUserLogin(key)) {
+            if (updateTime.getAppointmentStartTime() < (updateTime.getAppointmentEndTime())) {  //Compares the appointment
+                                                                      // start time and end time from the updateTime object.
+                Consultant finalResult = consultantService.updateTime(key, updateTime);  //If the start time is lesser
+                                                                        // than the end time, it proceeds with the update;
+                return new ResponseEntity<Consultant>(finalResult, HttpStatus.ACCEPTED);
+            } else {
+                throw new ConsultantException("Please Enter Valid Time Period.");
+            }
+        } else {
+            throw new LoginException("Invalid Key, Please Login First.");
+
+        }
+    }
 }
+
+
+
+
+
+
+
+
 
 
 
