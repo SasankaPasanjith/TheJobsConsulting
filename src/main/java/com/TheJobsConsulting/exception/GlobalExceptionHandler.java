@@ -20,10 +20,53 @@ public class GlobalExceptionHandler {
         myErrorDetails.setErrorMsg(userException.getMessage());
         myErrorDetails.setLocalDateTime(LocalDateTime.now());
         return new ResponseEntity<MyErrorDetails>(myErrorDetails, HttpStatus.BAD_REQUEST);
-
     }
 
+    @ExceptionHandler(LoginException.class)
+    public ResponseEntity<MyErrorDetails> loginExceptionHandler (LoginException loginException, WebRequest webRequest){
+        MyErrorDetails myErrorDetails = new MyErrorDetails();
+
+         myErrorDetails.setDetails(webRequest.getDescription(false));
+         myErrorDetails.setErrorMsg(loginException.getMessage());
+         myErrorDetails.setLocalDateTime(LocalDateTime.now());
+
+         return new ResponseEntity<MyErrorDetails>(myErrorDetails, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(AppointmentException.class)
+    public ResponseEntity<MyErrorDetails> appointmentExceptionHandler (AppointmentException appointmentException, WebRequest webRequest){
+        MyErrorDetails myErrorDetails = new MyErrorDetails();
+
+        myErrorDetails.setDetails(webRequest.getDescription(false));
+        myErrorDetails.setErrorMsg(appointmentException.getMessage());
+        myErrorDetails.setLocalDateTime(LocalDateTime.now());
+
+        return new ResponseEntity<MyErrorDetails>(myErrorDetails, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ConsultantException.class)
+    public ResponseEntity<MyErrorDetails> consultantExceptionHandler (ConsultantException consultantException, WebRequest webRequest){
+        MyErrorDetails myErrorDetails = new MyErrorDetails();
+
+        myErrorDetails.setDetails(webRequest.getDescription(false));
+        myErrorDetails.setErrorMsg(consultantException.getMessage());
+        myErrorDetails.setLocalDateTime(LocalDateTime.now());
+
+        return new ResponseEntity<MyErrorDetails>(myErrorDetails, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(TimeDateException.class)
+    public ResponseEntity<MyErrorDetails> timeDateExceptionHandler (TimeDateException timeDateException, WebRequest webRequest){
+        MyErrorDetails myErrorDetails = new MyErrorDetails();
+
+        myErrorDetails.setDetails(webRequest.getDescription(false));
+        myErrorDetails.setErrorMsg(timeDateException.getMessage());
+        myErrorDetails.setLocalDateTime(LocalDateTime.now());
+
+        return new ResponseEntity<MyErrorDetails>(myErrorDetails, HttpStatus.BAD_REQUEST);
+    }
 }
+
 
 
 
