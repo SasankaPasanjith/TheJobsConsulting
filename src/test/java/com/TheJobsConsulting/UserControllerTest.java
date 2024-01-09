@@ -2,10 +2,12 @@ package com.TheJobsConsulting;
 
 import com.TheJobsConsulting.controller.UserController;
 import com.TheJobsConsulting.entity.User;
+import com.TheJobsConsulting.exception.LoginException;
 import com.TheJobsConsulting.exception.UserException;
 import com.TheJobsConsulting.service.ConsultantService;
 import com.TheJobsConsulting.service.UserAdminLoginService;
 import com.TheJobsConsulting.service.UserService;
+import org.apache.tomcat.util.http.parser.HttpParser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -48,10 +50,38 @@ public class UserControllerTest {
         verify(userService).createUser(user);
     }
 
+    @Test
+    public void testUpdateUser()throws UserException{
+        User user  = new User();
+        when(userService.updateUser(user, "valid_key")).thenReturn(user);
+        ResponseEntity<User> response = userController.updateUser(user, "valid_key");
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertSame(user, response.getBody());
+        verify(userService).updateUser(user, "valid_key");
+    }
+
+    @Test
+    public void testGetUserDetails() throws LoginException, UserException{
+        String key = "valid_key";
+        User user = new User();
+        when(userAdminLoginService.checkUserLogin(key)).thenReturn(true);
+        when(userService.getUserDetails(key)).thenReturn(user);
+
+        ResponseEntity<User> response = userController.viewUserDetails(key);
+
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertSame(user, response.getBody());
+
+        verify(userAdminLoginService).checkUserLogin(key);
+        verify(userService).getUserDetails(key);
+    }
+
 }
 
 
 
 
+   
 
 
