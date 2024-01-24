@@ -2,6 +2,7 @@ package com.TheJobsConsulting;
 
 import com.TheJobsConsulting.controller.LoginController;
 import com.TheJobsConsulting.entity.LoginDTO;
+import com.TheJobsConsulting.entity.LoginResponce;
 import com.TheJobsConsulting.entity.LoginUUIDKey;
 import com.TheJobsConsulting.exception.LoginException;
 import com.TheJobsConsulting.service.ConsultantLoginService;
@@ -14,8 +15,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -61,6 +61,45 @@ public class LoginControllerTest {
         verify(consultantLoginService).logToAccount(loginDTO);
     }
 
+    @Test
+    public void testCheckUserLogin() throws LoginException{
+        String uuid = "valid_uuid";
+        when(userAdminLoginService.checkUserLogin(uuid)).thenReturn(true);
+        ResponseEntity<LoginResponce> responce = loginController.checkUserLogin(uuid);
+        assertEquals(HttpStatus.OK, responce.getStatusCode());
+        assertTrue(responce.getBody().getLoginOrNot());
+
+        verify(userAdminLoginService).checkUserLogin(uuid);
+    }
+
+    @Test
+    public void testLogoutUser() throws LoginException{
+        String key = "valid_key";
+        when(userAdminLoginService.logOutAccount(key)).thenReturn("Successfully Logged out");
+        String result = loginController.logoutUser(key);
+        assertEquals("Successfully Logged out", result);
+
+        verify(userAdminLoginService).logOutAccount(key);
+    }
+
+    @Test
+    public void testLogoutConsultant() throws LoginException{
+        String key = "valid_key";
+        when(consultantLoginService.logOutAccount(key)).thenReturn("Successfully Logged out");
+        String result = loginController.logoutConsultant(key);
+        assertEquals("Successfully Logged out", result);
+
+        verify(consultantLoginService).logOutAccount(key);
+    }
+
 }
+
+
+
+
+
+
+
+
 
 
