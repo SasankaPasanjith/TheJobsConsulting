@@ -2,6 +2,7 @@ package com.TheJobsConsulting;
 
 import com.TheJobsConsulting.controller.UserController;
 import com.TheJobsConsulting.entity.Appointment;
+import com.TheJobsConsulting.entity.Consultant;
 import com.TheJobsConsulting.entity.User;
 import com.TheJobsConsulting.exception.*;
 import com.TheJobsConsulting.service.ConsultantService;
@@ -14,11 +15,13 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.core.Constants;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -96,8 +99,23 @@ public class UserControllerTest {
         verify(userService).bookAppointment(key, appointment);
     }
 
-}
+    @Test
+    public void testAvailableTimeOfConsultant() throws IOException, TimeDateException, LoginException, ConsultantException {
+        String key = "valid_key";
+        Consultant consultant = new Consultant();
+        List<LocalDateTime> availableTiming = new ArrayList<>();
+        when(userAdminLoginService.checkUserLogin(key)).thenReturn(true);
+        when(consultantService.consultantAvailableTimeForBooking(key, consultant)).thenReturn(availableTiming);
+        ResponseEntity<List<LocalDateTime>> response = userController.getConsultantAvailableTime(key, consultant);
 
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertSame(availableTiming, response.getBody());
+
+        verify(userAdminLoginService).checkUserLogin(key);
+        verify(consultantService).consultantAvailableTimeForBooking(key, consultant);
+    }
+
+}
 
 
 
