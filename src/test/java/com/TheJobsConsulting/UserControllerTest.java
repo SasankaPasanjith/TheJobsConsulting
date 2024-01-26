@@ -1,20 +1,24 @@
 package com.TheJobsConsulting;
 
 import com.TheJobsConsulting.controller.UserController;
+import com.TheJobsConsulting.entity.Appointment;
 import com.TheJobsConsulting.entity.User;
-import com.TheJobsConsulting.exception.LoginException;
-import com.TheJobsConsulting.exception.UserException;
+import com.TheJobsConsulting.exception.*;
 import com.TheJobsConsulting.service.ConsultantService;
 import com.TheJobsConsulting.service.UserAdminLoginService;
 import com.TheJobsConsulting.service.UserService;
+import jakarta.mail.MessagingException;
 import org.apache.tomcat.util.http.parser.HttpParser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.core.Constants;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -77,7 +81,24 @@ public class UserControllerTest {
         verify(userService).getUserDetails(key);
     }
 
+    @Test
+    public void testBookAppointment() throws LoginException, AppointmentException, ConsultantException, IOException,
+            TimeDateException, MessagingException{
+        String key = "valid_key";
+        Appointment appointment = new Appointment();
+        when(userAdminLoginService.checkUserLogin(key)).thenReturn(true);
+        when(userService.bookAppointment(key, appointment)).thenReturn(appointment);
+        ResponseEntity<Appointment> response = userController.bookAppointment(key, appointment);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(appointment, response.getBody());
+
+        verify(userAdminLoginService).checkUserLogin(key);
+        verify(userService).bookAppointment(key, appointment);
+    }
+
 }
+
+
 
 
 
