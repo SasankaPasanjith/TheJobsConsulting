@@ -30,7 +30,7 @@ public class ConsultantController {
         if (consultantLoginService.checkUserLogin(key)) {                     //Check whether the consultant is logged in
             Consultant returnConsultant = consultantService.getConsultantDetails(key); //calls a method to retrieve
             // details for the consultant
-            return new ResponseEntity<Consultant>(returnConsultant, HttpStatus.CREATED);
+            return new ResponseEntity<Consultant>(returnConsultant, HttpStatus.ACCEPTED);
         } else {
             throw new LoginException("Please Enter Valid Key.");
         }
