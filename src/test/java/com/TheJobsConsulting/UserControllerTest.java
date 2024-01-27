@@ -3,6 +3,7 @@ package com.TheJobsConsulting;
 import com.TheJobsConsulting.controller.UserController;
 import com.TheJobsConsulting.entity.Appointment;
 import com.TheJobsConsulting.entity.Consultant;
+import com.TheJobsConsulting.entity.ForgotPassword;
 import com.TheJobsConsulting.entity.User;
 import com.TheJobsConsulting.exception.*;
 import com.TheJobsConsulting.service.ConsultantService;
@@ -18,6 +19,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import javax.annotation.meta.When;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -113,6 +115,90 @@ public class UserControllerTest {
 
         verify(userAdminLoginService).checkUserLogin(key);
         verify(consultantService).consultantAvailableTimeForBooking(key, consultant);
+    }
+
+    @Test
+    public void testUserAllAppointment() throws AppointmentException, UserException, LoginException{
+        String key = "valid_key";
+        List<Appointment> appointments = new ArrayList<>();
+        when(userAdminLoginService.checkUserLogin(key)).thenReturn(true);
+        when(userService.getUserAppointment(key)).thenReturn(appointments);
+        ResponseEntity<List<Appointment>>response = userController.getAllAppointments(key);
+
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertSame(appointments, response.getBody());
+
+        verify(userAdminLoginService).checkUserLogin(key);
+        verify(userService).getUserAppointment(key);
+    }
+
+    @Test
+    public void testAllConsultantsInDB() throws ConsultantException, LoginException{
+        String key = "valid_key";
+        List<Consultant> consultants = new ArrayList<>();
+        when(userAdminLoginService.checkUserLogin(key)).thenReturn(true);
+        when(consultantService.getAllConsultantsInDb()).thenReturn(consultants);
+
+        ResponseEntity<List<Consultant>> response = userController.getAllConsultantsInDatabase(key);
+
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertSame(consultants, response.getBody());
+
+        verify(userAdminLoginService).checkUserLogin(key);
+        verify(consultantService).getAllConsultantsInDb();
+    }
+
+    @Test
+    public void testGetAllConsultants() throws ConsultantException, LoginException{
+        String key = "valid_key";
+        List<Consultant> consultants = new ArrayList<>();
+        when(userAdminLoginService.checkUserLogin(key)).thenReturn(true);
+        when(userService.getAllConsultant()).thenReturn(consultants);
+
+        ResponseEntity<List<Consultant>> response = userController.getAllConsultants(key);
+
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertSame(consultants, response.getBody());
+
+        verify(userAdminLoginService).checkUserLogin(key);
+        verify(userService).getAllConsultant();
+    }
+
+    @Test
+    public void testDeleteAppointment() throws  AppointmentException, ConsultantException, Exception{
+        String key = "valid_key";
+        Appointment appointment = new Appointment();
+        when(userAdminLoginService.checkUserLogin(key)).thenReturn(true);
+        when(userService.deleteAppointment(appointment)).thenReturn(appointment);
+
+        ResponseEntity<Appointment> response = userController.deleteAppointmet(key, appointment);
+
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertSame(appointment, response.getBody());
+
+        verify(userAdminLoginService).checkUserLogin(key);
+        verify(userService).deleteAppointment(appointment);
+    }
+
+    @Test
+    public void testForgotPassword() throws LoginException, PasswordException{
+        String key ="valid_key";
+        ForgotPassword forgotPassword = new ForgotPassword();
+        forgotPassword.setCurrentPassword("current_password");
+        forgotPassword.setNewPassword("new_password");
+        forgotPassword.setConfirmNewPassword("new_password");
+        User user = new User();
+
+        when(userAdminLoginService.checkUserLogin(key)).thenReturn(true);
+        when(userService.forgotPassword(key, forgotPassword)).thenReturn(user);
+
+        ResponseEntity<User> response = userController.forgotPassword(key, forgotPassword);
+
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertSame(user, response.getBody());
+
+        verify(userAdminLoginService).checkUserLogin(key);
+        verify(userService).forgotPassword(key, forgotPassword);
     }
 
 }
