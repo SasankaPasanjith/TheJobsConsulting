@@ -10,7 +10,6 @@ import com.TheJobsConsulting.service.ConsultantService;
 import com.TheJobsConsulting.service.UserAdminLoginService;
 import com.TheJobsConsulting.service.UserService;
 import jakarta.mail.MessagingException;
-import org.apache.tomcat.util.http.parser.HttpParser;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
