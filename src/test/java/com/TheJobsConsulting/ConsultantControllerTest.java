@@ -1,7 +1,10 @@
 package com.TheJobsConsulting;
 
 import com.TheJobsConsulting.controller.ConsultantController;
+import com.TheJobsConsulting.entity.Appointment;
 import com.TheJobsConsulting.entity.Consultant;
+import com.TheJobsConsulting.entity.CurrentSession;
+import com.TheJobsConsulting.exception.AppointmentException;
 import com.TheJobsConsulting.exception.ConsultantException;
 import com.TheJobsConsulting.exception.LoginException;
 import com.TheJobsConsulting.exception.UserException;
@@ -14,6 +17,9 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -47,9 +53,33 @@ public class ConsultantControllerTest {
         assertSame(consultant, response.getBody());
     }
 
+    @Test
+    public void testFutureAppointment() throws LoginException, UserException, ConsultantException, AppointmentException {
+        String validKey = "valid_key";
+        CurrentSession currentUserSession = new CurrentSession();
+        currentUserSession.setUserType("consultant");
+        Consultant registerConsultant = new Consultant();
+        List<Appointment> appointments =new ArrayList<>();
+
+        when(consultantLoginService.checkUserLogin(validKey)).thenReturn(true);
+        when(consultantService.getCurrentUserByUuid(validKey)).thenReturn(currentUserSession);
+        when(consultantService.getConsultantByUuid(validKey)).thenReturn(registerConsultant);
+        when(consultantService.getFutureAppointments(registerConsultant)).thenReturn(appointments);
+
+        ResponseEntity<List<Appointment>> response = consultantController.getUpcomingAppointments(validKey);
+
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertSame(appointments, response.getBody());
+    }
+
+    @Test
+    public void testFutureAppointmnet_InvalidKey() throws LoginException {
+        String invalidKey = "invalidkey";
+        when(consultantLoginService.checkUserLogin(invalidKey)).thenReturn(false);
+
+        assertThrows(LoginException.class, () -> consultantController.getUpcomingAppointments(invalidKey));
+    }
+
 }
-
-
-
 
 
