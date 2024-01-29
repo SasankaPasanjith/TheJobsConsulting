@@ -16,6 +16,9 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -39,7 +42,7 @@ public class AdminControllerTest {
     }
 
     @Test
-    public void registerConsultant() throws ConsultantException, LoginException {
+    public void TestRegisterConsultant() throws ConsultantException, LoginException {
         when (userAdminLoginService.checkUserLogin(anyString())).thenReturn(true);
         CurrentSession currentUserSession = new CurrentSession();
         currentUserSession.setUserType("admin");
@@ -57,25 +60,41 @@ public class AdminControllerTest {
         verify(adminService).registerConsultant(consultant);
     }
 
-
-
     @Test
-    void getAllConsultants() {
+    public void TestRegisterConsultant_InvalidKey() throws LoginException{
+        when(userAdminLoginService.checkUserLogin(anyString())).thenReturn(false);
+
+        try {
+            adminController.registerConsultant("invalid_key", new Consultant());
+        }catch (LoginException | ConsultantException e){
+            assertEquals("Invalid; Please Login", e.getMessage());
+        }
+
+        verify(userAdminLoginService).checkUserLogin("invalid_key");
+        verifyNoInteractions(userService);
+        verifyNoInteractions(adminService);
     }
 
     @Test
-    void getALlUsers() {
-    }
+    public void testGetAllValidInvalidConsultants() throws LoginException, ConsultantException{
+        when(userAdminLoginService.checkUserLogin(anyString())).thenReturn(true);
 
-    @Test
-    void getAllAppointment() {
-    }
+        CurrentSession currentUserSession = new CurrentSession();
+        currentUserSession.setUserType("admin");
+        when(userService.getCurrentUserByUuid(anyString())).thenReturn(currentUserSession);
 
-    @Test
-    void revokePermissionConsultant() {
-    }
+        List<Consultant> consultantList = new ArrayList<>();
+        when(adminService.getAllValidInvalidConsultants(anyString())).thenReturn(consultantList);
 
-    @Test
-    void grantPermissionConsultant() {
+        ResponseEntity<List<Consultant>> response = adminController.getAllConsultants("valid_key");
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(consultantList, response.getBody());
+
+        verify(userAdminLoginService).checkUserLogin("valid_key");
+        verify(userService).getCurrentUserByUuid("valid_key");
+        verify(adminService).getAllValidInvalidConsultants("valid_key");
     }
 }
+
+
+
