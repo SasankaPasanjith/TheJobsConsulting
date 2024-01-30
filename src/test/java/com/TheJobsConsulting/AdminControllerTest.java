@@ -3,8 +3,10 @@ package com.TheJobsConsulting;
 import com.TheJobsConsulting.controller.AdminController;
 import com.TheJobsConsulting.entity.Consultant;
 import com.TheJobsConsulting.entity.CurrentSession;
+import com.TheJobsConsulting.entity.User;
 import com.TheJobsConsulting.exception.ConsultantException;
 import com.TheJobsConsulting.exception.LoginException;
+import com.TheJobsConsulting.exception.UserException;
 import com.TheJobsConsulting.service.AdminService;
 import com.TheJobsConsulting.service.UserAdminLoginService;
 import com.TheJobsConsulting.service.UserService;
@@ -37,19 +39,19 @@ public class AdminControllerTest {
     private UserService userService;
 
     @BeforeEach
-    public void setUp(){
+    public void setUp() {
         MockitoAnnotations.initMocks(this);
     }
 
     @Test
     public void TestRegisterConsultant() throws ConsultantException, LoginException {
-        when (userAdminLoginService.checkUserLogin(anyString())).thenReturn(true);
+        when(userAdminLoginService.checkUserLogin(anyString())).thenReturn(true);
         CurrentSession currentUserSession = new CurrentSession();
         currentUserSession.setUserType("admin");
         when(userService.getCurrentUserByUuid(anyString())).thenReturn(currentUserSession);
 
         Consultant consultant = new Consultant();
-        when (adminService.registerConsultant(any (Consultant.class))).thenReturn(consultant);
+        when(adminService.registerConsultant(any(Consultant.class))).thenReturn(consultant);
 
         ResponseEntity<Consultant> responce = adminController.registerConsultant("valid_key", consultant);
         assertEquals(HttpStatus.CREATED, responce.getStatusCode());
@@ -61,12 +63,12 @@ public class AdminControllerTest {
     }
 
     @Test
-    public void TestRegisterConsultant_InvalidKey() throws LoginException{
+    public void TestRegisterConsultant_InvalidKey() throws LoginException {
         when(userAdminLoginService.checkUserLogin(anyString())).thenReturn(false);
 
         try {
             adminController.registerConsultant("invalid_key", new Consultant());
-        }catch (LoginException | ConsultantException e){
+        } catch (LoginException | ConsultantException e) {
             assertEquals("Invalid; Please Login", e.getMessage());
         }
 
@@ -76,7 +78,7 @@ public class AdminControllerTest {
     }
 
     @Test
-    public void testGetAllValidInvalidConsultants() throws LoginException, ConsultantException{
+    public void testGetAllValidInvalidConsultants() throws LoginException, ConsultantException {
         when(userAdminLoginService.checkUserLogin(anyString())).thenReturn(true);
 
         CurrentSession currentUserSession = new CurrentSession();
@@ -94,7 +96,57 @@ public class AdminControllerTest {
         verify(userService).getCurrentUserByUuid("valid_key");
         verify(adminService).getAllValidInvalidConsultants("valid_key");
     }
+
+    @Test
+    public void testGetAllValidInvalidConsultants_InvalidUserType() throws LoginException {
+        when(userAdminLoginService.checkUserLogin(anyString())).thenReturn(true);
+        CurrentSession currentUserSession = new CurrentSession();
+        currentUserSession.setUserType("user");
+        when(userService.getCurrentUserByUuid(anyString())).thenReturn(currentUserSession);
+
+        try {
+            adminController.getAllConsultants("valid_key");
+        } catch (LoginException | ConsultantException e) {
+            assertEquals("Please Login as an Admin.", e.getMessage());
+        }
+
+        verify(userAdminLoginService).checkUserLogin("valid_key");
+        verify(userService).getCurrentUserByUuid("valid_key");
+        verifyNoInteractions(adminService);
+    }
+
+    @Test
+    public void testGetAllUsers() throws  LoginException, UserException{
+        when(userAdminLoginService.checkUserLogin(anyString())).thenReturn(true);
+        List<User> userList = new ArrayList<>();
+        when(adminService.getAllUsers()).thenReturn(userList);
+
+        ResponseEntity<List<User>> response = adminController.getALlUsers("valid_key");
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertEquals(userList, response.getBody());
+
+        verify(userAdminLoginService).checkUserLogin("valid_key");
+        verify(adminService).getAllUsers();
+    }
+
+    @Test
+    public void testGetAllUsers_InvalidKey () throws LoginException{
+        when(userAdminLoginService.checkUserLogin(anyString())).thenReturn(false);
+
+        try {
+            adminController.getALlUsers("invalid_key");
+        }catch (LoginException | UserException e){
+            assertEquals("Error. Please Login. ", e.getMessage());
+        }
+
+        verify(userAdminLoginService).checkUserLogin("invalid_key");
+        verifyNoInteractions(adminService);
+    }
 }
+
+
+
+
 
 
 
