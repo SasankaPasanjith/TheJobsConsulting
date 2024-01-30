@@ -1,9 +1,11 @@
 package com.TheJobsConsulting;
 
 import com.TheJobsConsulting.controller.AdminController;
+import com.TheJobsConsulting.entity.Appointment;
 import com.TheJobsConsulting.entity.Consultant;
 import com.TheJobsConsulting.entity.CurrentSession;
 import com.TheJobsConsulting.entity.User;
+import com.TheJobsConsulting.exception.AppointmentException;
 import com.TheJobsConsulting.exception.ConsultantException;
 import com.TheJobsConsulting.exception.LoginException;
 import com.TheJobsConsulting.exception.UserException;
@@ -116,7 +118,7 @@ public class AdminControllerTest {
     }
 
     @Test
-    public void testGetAllUsers() throws  LoginException, UserException{
+    public void testGetAllUsers() throws LoginException, UserException {
         when(userAdminLoginService.checkUserLogin(anyString())).thenReturn(true);
         List<User> userList = new ArrayList<>();
         when(adminService.getAllUsers()).thenReturn(userList);
@@ -130,19 +132,110 @@ public class AdminControllerTest {
     }
 
     @Test
-    public void testGetAllUsers_InvalidKey () throws LoginException{
+    public void testGetAllUsers_InvalidKey() throws LoginException {
         when(userAdminLoginService.checkUserLogin(anyString())).thenReturn(false);
 
         try {
             adminController.getALlUsers("invalid_key");
-        }catch (LoginException | UserException e){
+        } catch (LoginException | UserException e) {
             assertEquals("Error. Please Login. ", e.getMessage());
         }
 
         verify(userAdminLoginService).checkUserLogin("invalid_key");
         verifyNoInteractions(adminService);
     }
+
+    @Test
+    public void testGetAllAppointments() throws LoginException, AppointmentException {
+        when(userAdminLoginService.checkUserLogin(anyString())).thenReturn(true);
+
+        List<Appointment> appointmentList = new ArrayList<>();
+        when(adminService.getAllAppointments()).thenReturn(appointmentList);
+
+        ResponseEntity<List<Appointment>> response = adminController.getAllAppointment("valid_key");
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertEquals(appointmentList, response.getBody());
+
+        verify(userAdminLoginService).checkUserLogin("valid_key");
+        verify(adminService).getAllAppointments();
+    }
+
+    @Test
+    public void testGetAllAppointments_InvalidKey() throws LoginException {
+        when(userAdminLoginService.checkUserLogin(anyString())).thenReturn(false);
+
+        try {
+            adminController.getAllAppointment("invalid_key");
+        } catch (LoginException | AppointmentException e) {
+            assertEquals("Please Login First.", e.getMessage());
+        }
+
+        verify(userAdminLoginService).checkUserLogin("invalid_key");
+        verifyNoInteractions(adminService);
+    }
+
+    @Test
+    public void testRevokePermissionConsultant() throws LoginException, ConsultantException{
+        when(userAdminLoginService.checkUserLogin(anyString())).thenReturn(true);
+        CurrentSession currentUserSession = new CurrentSession();
+        currentUserSession.setUserType("admin");
+        when(userService.getCurrentUserByUuid(anyString())).thenReturn(currentUserSession);
+
+        Consultant consultant = new Consultant();
+
+        when(adminService.revokePermissionConsultant(any(Consultant.class))).thenReturn(consultant);
+
+        ResponseEntity<Consultant> response = adminController.revokePermissionConsultant("valid_key", consultant);
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(consultant, response.getBody());
+
+        verify(userAdminLoginService).checkUserLogin("valid_key");
+        verify(userService).getCurrentUserByUuid("valid_key");
+        verify(adminService).revokePermissionConsultant(consultant);
+    }
+
+    @Test
+    public void testRevokePermissionConsultant_InvalidKey() throws LoginException{
+        when(userAdminLoginService.checkUserLogin(anyString())).thenReturn(false);
+
+        try {
+            adminController.revokePermissionConsultant("invalid_key", new Consultant());
+        }catch (LoginException | ConsultantException e){
+            assertEquals("Please Enter Valid Key.", e.getMessage());
+        }
+        verify(userAdminLoginService).checkUserLogin("invalid_key");
+        verifyNoInteractions(userService);
+        verifyNoInteractions(adminService);
+    }
+
+    @Test
+    public void testRevokePermissionConsultant_InvalidUserType() throws  LoginException{
+        when(userAdminLoginService.checkUserLogin(anyString())).thenReturn(true);
+
+        CurrentSession currentUserSession = new CurrentSession();
+        currentUserSession.setUserType("user");
+        when(userService.getCurrentUserByUuid(anyString())).thenReturn(currentUserSession);
+
+        try {
+            adminController.revokePermissionConsultant("valid_key", new Consultant());
+        }catch (LoginException  |  ConsultantException e){
+            assertEquals("Please Login As An Admin.", e.getMessage());
+        }
+
+        verify(userAdminLoginService).checkUserLogin("valid_key");
+        verify(userService).getCurrentUserByUuid("valid_key");
+        verifyNoInteractions(adminService);
+    }
 }
+
+
+
+
+
+
+
+
+
 
 
 
