@@ -226,7 +226,46 @@ public class AdminControllerTest {
         verify(userService).getCurrentUserByUuid("valid_key");
         verifyNoInteractions(adminService);
     }
+
+    @Test
+    public void testConsultantGrantPermission () throws LoginException, ConsultantException{
+        when(userAdminLoginService.checkUserLogin(anyString())).thenReturn(true);
+
+        CurrentSession currentUserSession = new CurrentSession();
+        currentUserSession.setUserType("admin");
+        when(userService.getCurrentUserByUuid(anyString())).thenReturn(currentUserSession);
+
+        Consultant consultant = new Consultant();
+        when(adminService.grantPermissionConsultant(any(Consultant.class))).thenReturn(consultant);
+
+        ResponseEntity<Consultant> response = adminController.grantPermissionConsultant("valid_key", consultant );
+        assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(consultant, response.getBody());
+
+        verify(userAdminLoginService).checkUserLogin("valid_key");
+        verify(userService).getCurrentUserByUuid("valid_key");
+        verify(adminService).grantPermissionConsultant(consultant);
+    }
+
+    @Test
+    public void testConsultantGrantPermission_InvalidKey () throws LoginException{
+        when(userAdminLoginService.checkUserLogin(anyString())).thenReturn(false);
+
+        try{
+            adminController.grantPermissionConsultant("invalid_key", new Consultant());
+        }catch (LoginException | ConsultantException e){
+            assertEquals("Please Enter Valid Key.", e.getMessage());
+        }
+
+        verify(userAdminLoginService).checkUserLogin("invalid_key");
+        verifyNoInteractions(userService);
+        verifyNoInteractions(adminService);
+    }
 }
+
+
+
+
 
 
 
