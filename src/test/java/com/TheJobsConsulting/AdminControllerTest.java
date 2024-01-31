@@ -261,7 +261,28 @@ public class AdminControllerTest {
         verifyNoInteractions(userService);
         verifyNoInteractions(adminService);
     }
+
+    @Test
+    public void testConsultantGrantPermission_InvalidUserType() throws LoginException{
+        when(userAdminLoginService.checkUserLogin(anyString())).thenReturn(true);
+
+        CurrentSession currentUserSession = new CurrentSession();
+        currentUserSession.setUserType("user");
+        when(userService.getCurrentUserByUuid(anyString())).thenReturn(currentUserSession);
+
+        try{
+            adminController.grantPermissionConsultant("valid_key", new Consultant());
+        }catch (LoginException | ConsultantException e){
+            assertEquals("Please Login As An Admin.", e.getMessage());
+        }
+
+        verify(userAdminLoginService).checkUserLogin("valid_key");
+        verify(userService).getCurrentUserByUuid("valid_key");
+        verifyNoInteractions(adminService);
+    }
+
 }
+
 
 
 
