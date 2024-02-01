@@ -4,6 +4,7 @@ import com.TheJobsConsulting.controller.ConsultantController;
 import com.TheJobsConsulting.entity.Appointment;
 import com.TheJobsConsulting.entity.Consultant;
 import com.TheJobsConsulting.entity.CurrentSession;
+import com.TheJobsConsulting.entity.User;
 import com.TheJobsConsulting.exception.AppointmentException;
 import com.TheJobsConsulting.exception.ConsultantException;
 import com.TheJobsConsulting.exception.LoginException;
@@ -108,24 +109,42 @@ public class ConsultantControllerTest {
     @Test
     public void testGetAllAppointments() throws LoginException, UserException, AppointmentException, ConsultantException{
 
-        String validKey ="validKey";
+       String validKey = "validKey";
+       CurrentSession currentUserSession = new CurrentSession();
+       currentUserSession.setUserType("consultant");
+       Consultant registerConsultant = new Consultant();
+       List<Appointment> appointments = new ArrayList<>();
+
+       when(consultantLoginService.checkUserLogin(validKey)).thenReturn(true);
+       when(consultantService.getCurrentUserByUuid(validKey)).thenReturn(currentUserSession);
+       when(consultantService.getConsultantByUuid(validKey)).thenReturn(registerConsultant);
+       when(consultantService.getAllAppointments(registerConsultant)).thenReturn(appointments);
+
+       ResponseEntity<List<Appointment>> response = consultantController.getAllAppointments(validKey);
+
+       assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+       assertSame(appointments, response.getBody());
+    }
+
+    @Test
+    public void testGetAllListOfUsers() throws ConsultantException, LoginException, UserException{
+        String validKey = "validKey";
         CurrentSession currentUserSession = new CurrentSession();
         currentUserSession.setUserType("consultant");
         Consultant registerConsultant = new Consultant();
-        List<Appointment> appointments = new ArrayList<>();
+        List<User> users = new ArrayList<>();
 
         when(consultantLoginService.checkUserLogin(validKey)).thenReturn(true);
         when(consultantService.getCurrentUserByUuid(validKey)).thenReturn(currentUserSession);
         when(consultantService.getConsultantByUuid(validKey)).thenReturn(registerConsultant);
-        when(consultantService.getAllAppointments(registerConsultant)).thenReturn(appointments);
+        when(consultantService.getUserList()).thenReturn(users);
 
-        ResponseEntity<List<Appointment>> response = consultantController.getPastAppointments(validKey);
-        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
-        assertSame(appointments, response.getBody());
+        ResponseEntity<List<User>> response = consultantController.getListOfUsers(validKey);
 
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertSame(users, response.getBody());
     }
 }
-
 
 
 
