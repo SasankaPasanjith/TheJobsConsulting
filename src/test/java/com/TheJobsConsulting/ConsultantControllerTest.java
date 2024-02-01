@@ -98,7 +98,36 @@ public class ConsultantControllerTest {
         assertSame(appointments, response.getBody());
     }
 
+    @Test
+    public void testGetPastAppointment_InvalidKey() throws  LoginException{
+        String invalidKey = "invalidKey";
+        when(consultantLoginService.checkUserLogin(invalidKey)).thenReturn(false);
+        assertThrows(LoginException.class, () -> consultantController.getPastAppointments(invalidKey));
+    }
+
+    @Test
+    public void testGetAllAppointments() throws LoginException, UserException, AppointmentException, ConsultantException{
+
+        String validKey ="validKey";
+        CurrentSession currentUserSession = new CurrentSession();
+        currentUserSession.setUserType("consultant");
+        Consultant registerConsultant = new Consultant();
+        List<Appointment> appointments = new ArrayList<>();
+
+        when(consultantLoginService.checkUserLogin(validKey)).thenReturn(true);
+        when(consultantService.getCurrentUserByUuid(validKey)).thenReturn(currentUserSession);
+        when(consultantService.getConsultantByUuid(validKey)).thenReturn(registerConsultant);
+        when(consultantService.getAllAppointments(registerConsultant)).thenReturn(appointments);
+
+        ResponseEntity<List<Appointment>> response = consultantController.getPastAppointments(validKey);
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertSame(appointments, response.getBody());
+
+    }
 }
+
+
+
 
 
 
