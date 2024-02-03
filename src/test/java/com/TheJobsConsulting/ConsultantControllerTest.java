@@ -172,14 +172,57 @@ public class ConsultantControllerTest {
     }
 
     @Test
-    public void testForgotPassword_InvalidKey() throws  LoginException, PasswordException{
+    public void testForgotPassword_InvalidKey() throws  LoginException{
       String invalidKey ="invalidKey";
       ForgotPassword forgotPassword = new ForgotPassword();
       when(consultantLoginService.checkUserLogin(invalidKey)).thenReturn(false);
       assertThrows(LoginException.class, ()-> consultantController.forgotPassword(invalidKey, forgotPassword));
     }
 
+    @Test
+    public void testTimeUpdate() throws  LoginException, ConsultantException{
+        String validKey = "validKey";
+        UpdateTime updateTime = new UpdateTime();
+        updateTime.setAppointmentStartTime(9);
+        updateTime.setAppointmentEndTime(10);
+        Consultant consultant = new Consultant();
+
+        when(consultantLoginService.checkUserLogin(validKey)).thenReturn(true);
+        when(consultantService.updateTime(validKey, updateTime)).thenReturn(consultant);
+
+        ResponseEntity<Consultant> response = consultantController.timeUpdate(validKey, updateTime);
+
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertSame(consultant, response.getBody());
+    }
+
+    @Test
+    public void testTimeUpdate_validKey_InvalidTime ()throws LoginException{
+        String validKey = "validkey";
+        UpdateTime updateTime = new UpdateTime();
+        updateTime.setAppointmentStartTime(10);
+        updateTime.setAppointmentEndTime(9);
+        when(consultantLoginService.checkUserLogin(validKey)).thenReturn(true);
+
+        assertThrows(ConsultantException.class, ()->consultantController.timeUpdate(validKey, updateTime));
+    }
+
+    @Test
+    public void testTimeUpdate_InvalidKey ()throws LoginException, ConsultantException{
+        String invalidKey = "invalidKey";
+        UpdateTime updateTime = new UpdateTime();
+        when(consultantLoginService.checkUserLogin(invalidKey)).thenReturn(false);
+
+        assertThrows(LoginException.class, ()->consultantController.timeUpdate(invalidKey, updateTime));
+    }
+
 }
+
+
+
+
+
+
 
 
 
