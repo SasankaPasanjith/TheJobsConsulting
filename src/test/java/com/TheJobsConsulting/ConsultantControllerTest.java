@@ -1,14 +1,8 @@
 package com.TheJobsConsulting;
 
 import com.TheJobsConsulting.controller.ConsultantController;
-import com.TheJobsConsulting.entity.Appointment;
-import com.TheJobsConsulting.entity.Consultant;
-import com.TheJobsConsulting.entity.CurrentSession;
-import com.TheJobsConsulting.entity.User;
-import com.TheJobsConsulting.exception.AppointmentException;
-import com.TheJobsConsulting.exception.ConsultantException;
-import com.TheJobsConsulting.exception.LoginException;
-import com.TheJobsConsulting.exception.UserException;
+import com.TheJobsConsulting.entity.*;
+import com.TheJobsConsulting.exception.*;
 import com.TheJobsConsulting.service.ConsultantLoginService;
 import com.TheJobsConsulting.service.ConsultantService;
 import org.junit.jupiter.api.BeforeEach;
@@ -127,6 +121,13 @@ public class ConsultantControllerTest {
     }
 
     @Test
+    public void testGetAllAppointments_InvalidKey () throws  LoginException{
+        String invalidKey = "invalidKey";
+        when(consultantLoginService.checkUserLogin(invalidKey)).thenReturn(false);
+        assertThrows(LoginException.class, () -> consultantController.getAllAppointments(invalidKey));
+    }
+
+    @Test
     public void testGetAllListOfUsers() throws ConsultantException, LoginException, UserException{
         String validKey = "validKey";
         CurrentSession currentUserSession = new CurrentSession();
@@ -144,7 +145,42 @@ public class ConsultantControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertSame(users, response.getBody());
     }
+
+    @Test
+    public void testGetAllListOfUsers_InvalidKey() throws LoginException{
+        String invalidKey = "invalidKey";
+        when(consultantLoginService.checkUserLogin(invalidKey)).thenReturn(false);
+        assertThrows(LoginException.class, () -> consultantController.getListOfUsers(invalidKey));
+    }
+
+    @Test
+    public void testForgotPassword() throws LoginException, PasswordException{
+        String validKey ="validKey";
+        ForgotPassword forgotPassword = new ForgotPassword();
+        forgotPassword.setCurrentPassword("current_password");
+        forgotPassword.setNewPassword("new_password");
+        forgotPassword.setConfirmNewPassword("new_password");
+        Consultant consultant = new Consultant();
+
+        when(consultantLoginService.checkUserLogin(validKey)).thenReturn(true);
+        when(consultantService.forgotPassword(validKey, forgotPassword)).thenReturn(consultant);
+
+        ResponseEntity<Consultant> response = consultantController.forgotPassword(validKey, forgotPassword);
+
+        assertEquals(HttpStatus.ACCEPTED, response.getStatusCode());
+        assertSame(consultant, response.getBody());
+    }
+
+    @Test
+    public void testForgotPassword_InvalidKey() throws  LoginException, PasswordException{
+      String invalidKey ="invalidKey";
+      ForgotPassword forgotPassword = new ForgotPassword();
+      when(consultantLoginService.checkUserLogin(invalidKey)).thenReturn(false);
+      assertThrows(LoginException.class, ()-> consultantController.forgotPassword(invalidKey, forgotPassword));
+    }
+
 }
+
 
 
 
